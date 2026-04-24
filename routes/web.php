@@ -100,7 +100,7 @@ Route::middleware(['auth', 'ensure.not.banned'])->group(function () {
     Route::post('/projects/{project}/sections/{section}/reject', [ProjectController::class, 'rejectSection'])->name('projects.sections.reject');
     
     // Project Reports
-    Route::resource('project-reports', ProjectReportController::class);
+    //Route::resource('project-reports', ProjectReportController::class);
     
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
