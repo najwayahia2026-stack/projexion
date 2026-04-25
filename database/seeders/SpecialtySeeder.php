@@ -39,6 +39,11 @@ class SpecialtySeeder extends Seeder
 
         foreach ($specialties as $name) {
             Specialty::firstOrCreate(['name' => $name]);
+            $this->call([
+        SpecialtySeeder::class,
+        // أي Seeders أخرى هنا...
+    ]);
         }
     }
+
 }
