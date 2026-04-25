@@ -126,7 +126,7 @@ Route::middleware(['auth', 'ensure.not.banned'])->group(function () {
     
     // Project Reports
     //Route::get('/projects/{project}/reports', [ProjectReportController::class, 'index'])->name('project-reports.index');
-    //Route::post('/projects/{project}/reports', [ProjectReportController::class, 'store'])->name('project-reports.store');
+    Route::post('/projects/{project}/reports', [ProjectReportController::class, 'store'])->name('project-reports.store');
     
     // Project Phases
     Route::get('/projects/{project}/phases', [ProjectPhaseController::class, 'index'])->name('project-phases.index');
