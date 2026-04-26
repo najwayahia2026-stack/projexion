@@ -18,23 +18,39 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+ public function boot(): void
 {
-    // الحل السحري: إذا كان جدول التخصصات فارغاً، املأه فوراً
+    // تأمين الروابط HTTPS في Railway
+    if (config('app.env') === 'production') {
+        \URL::forceScheme('https');
+    }
+
     try {
-        if (\Schema::hasTable('specialties') && \App\Models\Specialty::count() == 0) {
-            $data = ['الطب البشري', 'تقنية المعلومات', 'علوم حاسوب', 'هندسة برمجيات', 'إدارة أعمال'];
-            foreach ($data as $name) {
-                \App\Models\Specialty::create(['name' => $name]);
+        // --- 1. إضافة الأدوار (Roles) ---
+        // تأكدي من أسماء الأدوار (user, admin) إذا كنتِ تستخدمين أسماء مختلفة غيريها هنا
+        if (\Schema::hasTable('roles') && \DB::table('roles')->count() == 0) {
+            \DB::table('roles')->insert([
+                ['name' => 'user', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'admin', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()],
+            ]);
+        }
+
+        // --- 2. إضافة التخصصات (Specialties) ---
+        if (\Schema::hasTable('specialties') && \App\Models\Specialty::count() < 10) {
+            $specialties = [
+                'الطب البشري', 'طب الأسنان', 'الصيدلة', 'التمريض', 'المختبرات', 'الأشعة',
+                'الهندسة المدنية', 'الهندسة المعمارية', 'الهندسة الكهربائية', 'الهندسة الميكانيكية', 
+                'الهندسة الصناعية', 'علوم حاسوب', 'نظم معلومات', 'تقنية المعلومات', 
+                'الأمن السيبراني', 'الذكاء الاصطناعي', 'إدارة الأعمال', 'المحاسبة', 'الاقتصاد', 
+                'الشريعة والقانون', 'الدراسات الإسلامية', 'الإعلام', 'الترجمة', 'اللغة العربية'
+            ];
+
+            foreach ($specialties as $name) {
+                \App\Models\Specialty::firstOrCreate(['name' => trim($name)]);
             }
         }
     } catch (\Exception $e) {
-        // لتجنب أي خطأ في حال لم ينشأ الجدول بعد
-    }
-    
-    // كود الـ HTTPS الذي أضفناه سابقاً
-    if (config('app.env') === 'production') {
-        \URL::forceScheme('https');
+        // لتجنب تعطل الموقع
     }
 }
 }
