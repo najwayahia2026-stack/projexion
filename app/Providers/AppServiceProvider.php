@@ -26,16 +26,22 @@ class AppServiceProvider extends ServiceProvider
     }
 
     try {
-        // --- 1. إضافة الأدوار (Roles) ---
-        // تأكدي من أسماء الأدوار (user, admin) إذا كنتِ تستخدمين أسماء مختلفة غيريها هنا
+        // --- 1. إضافة الأدوار (Roles) بالأسماء الصحيحة ---
         if (\Schema::hasTable('roles') && \DB::table('roles')->count() == 0) {
-            \DB::table('roles')->insert([
-                ['name' => 'user', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()],
-                ['name' => 'admin', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now()],
-            ]);
+            $roles = [
+                ['name' => 'مشرف', 'guard_name' => 'web'],
+                ['name' => 'لجنة', 'guard_name' => 'web'],
+                ['name' => 'طالب', 'guard_name' => 'web'],
+            ];
+
+            foreach ($roles as $role) {
+                $role['created_at'] = now();
+                $role['updated_at'] = now();
+                \DB::table('roles')->insert($role);
+            }
         }
 
-        // --- 2. إضافة التخصصات (Specialties) ---
+        // --- 2. إضافة التخصصات (كما فعلنا سابقاً) ---
         if (\Schema::hasTable('specialties') && \App\Models\Specialty::count() < 10) {
             $specialties = [
                 'الطب البشري', 'طب الأسنان', 'الصيدلة', 'التمريض', 'المختبرات', 'الأشعة',
