@@ -20,28 +20,26 @@ class AppServiceProvider extends ServiceProvider
      */
  public function boot(): void
 {
-    // تأمين الروابط HTTPS في Railway
+    // تأمين الروابط HTTPS
     if (config('app.env') === 'production') {
         \URL::forceScheme('https');
     }
 
     try {
-        // --- 1. إضافة الأدوار (Roles) بالأسماء الصحيحة ---
-        if (\Schema::hasTable('roles') && \DB::table('roles')->count() == 0) {
-            $roles = [
-                ['name' => 'مشرف', 'guard_name' => 'web'],
-                ['name' => 'لجنة', 'guard_name' => 'web'],
-                ['name' => 'طالب', 'guard_name' => 'web'],
-            ];
-
-            foreach ($roles as $role) {
-                $role['created_at'] = now();
-                $role['updated_at'] = now();
-                \DB::table('roles')->insert($role);
+        // --- الحل القوي: إعادة تعيين الأدوار لضمان وجودها ---
+        if (\Schema::hasTable('roles')) {
+            $requiredRoles = ['أدمين', 'مشرف', 'لجنة', 'طالب'];
+            
+            foreach ($requiredRoles as $roleName) {
+                // البحث عن الدور، وإذا لم يكن موجوداً سيتم إنشاؤه فوراً
+                \DB::table('roles')->updateOrInsert(
+                    ['name' => $roleName, 'guard_name' => 'web'],
+                    ['created_at' => now(), 'updated_at' => now()]
+                );
             }
         }
 
-        // --- 2. إضافة التخصصات (كما فعلنا سابقاً) ---
+        // --- إضافة التخصصات ---
         if (\Schema::hasTable('specialties') && \App\Models\Specialty::count() < 10) {
             $specialties = [
                 'الطب البشري', 'طب الأسنان', 'الصيدلة', 'التمريض', 'المختبرات', 'الأشعة',
@@ -56,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
             }
         }
     } catch (\Exception $e) {
-        // لتجنب تعطل الموقع
+        // منع تعطل الموقع
     }
 }
 }
