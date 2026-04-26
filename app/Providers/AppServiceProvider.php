@@ -65,5 +65,23 @@ class AppServiceProvider extends ServiceProvider
     } catch (\Exception $e) {
         // لتجنب تعطل الموقع
     }
+    // إنشاء حساب أدمن تلقائياً إذا لم يكن موجوداً
+    if (\Schema::hasTable('users')) {
+        $adminEmail = 'admin@pro-jexion.com'; // يمكنك تغييره للإيميل الذي تفضلينه
+        
+        $admin = \App\Models\User::firstOrCreate(
+            ['email' => $adminEmail],
+            [
+                'name' => 'مدير النظام',
+                'username' => 'admin_main',
+                'password' => \Hash::make('12345678'), // كلمة المرور المؤقتة
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // إسناد رتبة أدمين له (بالإنجليزي والعربي للاحتياط)
+        $admin->assignRole('admin');
+        $admin->assignRole('أدمين');
+    }
 }
 }
