@@ -40,14 +40,14 @@ class AppServiceProvider extends ServiceProvider
 
         // 3. إنشاء حساب الأدمن وإسناد الأدوار له
         if (\Schema::hasTable('users')) {
-            $adminEmail = 'admin@pro-jexion.com';
+            $adminEmail = 'admin@projexion.com';
             
             $admin = \App\Models\User::firstOrCreate(
                 ['email' => $adminEmail],
                 [
                     'name' => 'مدير النظام',
                     'username' => 'admin_main',
-                    'password' => \Hash::make('12345678'), // كلمة المرور
+                    'password' => \Hash::make('najwa2026'), // كلمة المرور
                     'email_verified_at' => now(),
                 ]
             );
