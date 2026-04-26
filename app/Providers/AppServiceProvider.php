@@ -20,26 +20,16 @@ class AppServiceProvider extends ServiceProvider
      */
  public function boot(): void
 {
-    // تأمين الروابط HTTPS في Railway
+    // 1. تأمين الروابط HTTPS في Railway
     if (config('app.env') === 'production') {
         \URL::forceScheme('https');
     }
 
     try {
-        // --- 1. إضافة الأدوار (Roles) ---
-        // ملاحظة: أضفنا الأسماء بالإنجليزية لتطابق الـ Controller الخاص بكِ
+        // 2. إنشاء الأدوار (Roles) أولاً لضمان وجودها
         if (\Schema::hasTable('roles')) {
-            $roles = [
-                'admin', 
-                'student', 
-                'supervisor', 
-                'committee',
-                'أدمين',
-                'طالب',
-                'مشرف',
-                'لجنة'
-            ];
-
+            $roles = ['admin', 'student', 'supervisor', 'committee', 'أدمين', 'طالب', 'مشرف', 'لجنة'];
+            
             foreach ($roles as $roleName) {
                 \DB::table('roles')->updateOrInsert(
                     ['name' => $roleName, 'guard_name' => 'web'],
@@ -48,7 +38,27 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        // --- 2. إضافة التخصصات ---
+        // 3. إنشاء حساب الأدمن وإسناد الأدوار له
+        if (\Schema::hasTable('users')) {
+            $adminEmail = 'admin@pro-jexion.com';
+            
+            $admin = \App\Models\User::firstOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name' => 'مدير النظام',
+                    'username' => 'admin_main',
+                    'password' => \Hash::make('12345678'), // كلمة المرور
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            // إسناد الأدوار (بشرط وجود حزمة Spatie مفعلة)
+            if (method_exists($admin, 'assignRole')) {
+                $admin->syncRoles(['admin', 'أدمين']); 
+            }
+        }
+
+        // 4. إضافة التخصصات
         if (\Schema::hasTable('specialties') && \App\Models\Specialty::count() < 10) {
             $specialties = [
                 'الطب البشري', 'طب الأسنان', 'الصيدلة', 'التمريض', 'المختبرات', 'الأشعة',
@@ -62,26 +72,10 @@ class AppServiceProvider extends ServiceProvider
                 \App\Models\Specialty::firstOrCreate(['name' => trim($name)]);
             }
         }
-    } catch (\Exception $e) {
-        // لتجنب تعطل الموقع
-    }
-    // إنشاء حساب أدمن تلقائياً إذا لم يكن موجوداً
-    if (\Schema::hasTable('users')) {
-        $adminEmail = 'admin@pro-jexion.com'; // يمكنك تغييره للإيميل الذي تفضلينه
-        
-        $admin = \App\Models\User::firstOrCreate(
-            ['email' => $adminEmail],
-            [
-                'name' => 'مدير النظام',
-                'username' => 'admin_main',
-                'password' => \Hash::make('12345678'), // كلمة المرور المؤقتة
-                'email_verified_at' => now(),
-            ]
-        );
 
-        // إسناد رتبة أدمين له (بالإنجليزي والعربي للاحتياط)
-        $admin->assignRole('admin');
-        $admin->assignRole('أدمين');
+    } catch (\Exception $e) {
+        // تسجيل الخطأ في السجلات لمراجعته إذا لزم الأمر دون تعطل الموقع
+        \Log::error("Error in Boot Provider: " . $e->getMessage());
     }
 }
 }
