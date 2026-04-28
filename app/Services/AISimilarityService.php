@@ -15,8 +15,9 @@ class AISimilarityService
     public function __construct()
     {
         // جلب الرابط من ملف الإعدادات config، وإذا لم يوجد يستخدم الافتراضي (localhost:8001)
-        $this->aiServiceUrl = config('services.ai_similarity.url', 'http://localhost:8001');
-    }
+        //$this->aiServiceUrl = config('services.ai_similarity.url', 'http://localhost:8001');
+   $this->aiServiceUrl = 'https://cooperative-courage-production-1f2b.up.railway.app';
+        }
 
     /**
      * الوظيفة الرئيسية: فحص تشابه مشروع مع المشاريع الموجودة في قاعدة البيانات
